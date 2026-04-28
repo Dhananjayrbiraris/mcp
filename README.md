@@ -1,84 +1,60 @@
-# Elasticsearch MCP Server
+# Elasticsearch Web API
 
-A **Model Context Protocol (MCP)** server that exposes Elasticsearch semantic search capabilities as MCP tools. This server is optimized for **Elasticsearch Serverless** and managed Elastic Cloud clusters.
+A FastAPI-based web server that exposes Elasticsearch semantic search and data retrieval capabilities through a simple REST API. This project connects directly to your Elasticsearch cluster (including Elastic Cloud and Serverless) and allows you to build custom search applications effortlessly.
 
 ---
 
 ## 🚀 Features
 
-- **Semantic Search**: Use ELSER (sparse) or kNN (dense) directly within Elasticsearch.
-- **Hybrid Search**: Combine keyword (BM25) and semantic scores.
-- **Automatic Setup**: Tools to create indices with the correct mappings and ingest pipelines in one click.
-- **Serverless Ready**: Fully compatible with Elasticsearch Serverless and API Key authentication.
+- **Semantic Search**: Use native Elasticsearch semantic capabilities directly through a REST API.
+- **REST API First**: Fully functional web API with built-in Swagger documentation.
+- **Data Retrieval**: Easily pull raw documents from any index.
+- **Python Integration**: Includes a helper script (`multi_index_search.py`) demonstrating how to interact with the API using Python.
 
 ---
 
 ## 🛠️ Quickstart
 
 ### 1. Configure Environment
-Edit the `.env` file with your connection details:
+Edit the `.env` file with your Elasticsearch connection details:
 ```env
-ELASTICSEARCH_HOSTS=https://your-serverless-endpoint.es.us-east-1.aws.elastic.cloud:443
-ELASTICSEARCH_API_KEY=your_api_key
+ELASTICSEARCH_HOSTS=https://your-cluster-url.es.aws.elastic.cloud:443
+ELASTICSEARCH_API_KEY=your_api_key_here
 ```
 
-### 2. Verify Connection
-Run the verification suite to ensure your cluster is reachable and tools are registered:
+### 2. Start the Web API
+Start the web server using the pre-configured executable in your virtual environment:
 ```powershell
-.\venv\Scripts\python.exe verify_server.py
+.\venv\Scripts\elasticsearch-api.exe
 ```
 
-### 2. Run the Web API (Standard REST)
-Start the web server with a simple command:
-```powershell
-elasticsearch-api
-```
-- **API URL**: `http://localhost:8000`
-- **Interactive Docs**: `http://localhost:8000/docs`
+Once running, you can access:
+- **API Health Check**: `http://localhost:8000/ping`
+- **Interactive Documentation (Swagger UI)**: `http://localhost:8000/docs`
 
-### 3. Run the MCP Server (For AI Editors)
-Start the MCP server with a simple command:
+### 3. Run the Example Script
+A demo script (`multi_index_search.py`) is provided to show how to communicate with the API. While the server is running, open a new terminal and execute:
 ```powershell
-elasticsearch-mcp
+.\venv\Scripts\python.exe multi_index_search.py
 ```
+
+This script will:
+- Connect to the local API via `http://localhost:8000/call`
+- Retrieve records from the `company_details` index.
+- Perform native semantic searches on the `om_poc_v2` index using natural language queries.
+- Print the matched products with their relevance scores, prices, categories, and descriptions!
 
 ---
 
-## 🧩 Claude Desktop Integration
+## 🔍 Core Endpoints
 
-Add the following to your `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "elasticsearch": {
-      "command": "C:\\Users\\birar\\Desktop\\elasticsearch-mcp-server\\venv\\Scripts\\python.exe",
-      "args": ["-m", "elasticsearch_mcp"],
-      "env": {
-        "ELASTICSEARCH_HOSTS": "https://your-cluster-url.es.aws.elastic.cloud:443",
-        "ELASTICSEARCH_API_KEY": "your_api_key_here"
-      }
-    }
-  }
-}
-```
-
----
-
-## 🛠️ Available Tools
-
-- `es_ping`: Check connectivity.
-- `es_setup_elser_index`: Create a semantic index for ELSER.
-- `es_setup_dense_index`: Create a semantic index for dense vectors (kNN).
-- `es_index_document`: Index data through a pipeline.
-- `es_semantic_search_elser`: Perform sparse semantic search.
-- `es_semantic_search_knn`: Perform dense kNN search.
-- `es_semantic_search_hybrid`: Combined keyword and semantic search.
-- `es_delete_index`: Safely remove indices.
+- `GET /ping`: Verify your cluster connection.
+- `GET /tools`: List all available internal tools.
+- `POST /call`: The primary dynamic endpoint. Pass a tool name (like `es_raw_search`) and its arguments (like index and query DSL body) to interact with the Elasticsearch cluster.
 
 ---
 
 ## ⚠️ Requirements
 - **Python 3.11+**
 - **Elasticsearch 8.8+** (including Serverless)
-- **ML Models**: ELSER or E5 must be available/deployed in your cluster for semantic search tools to function.
+- Valid API Keys and a running cluster defined in your `.env` file.
